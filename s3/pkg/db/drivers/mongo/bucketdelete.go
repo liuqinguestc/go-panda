@@ -22,5 +22,12 @@ func (ad *adapter) DeleteBucket(bucketName string) S3Error {
 		log.Log("Delete bucket from database failed,err:%v.\n", err)
 		return InternalError
 	}
+	cc := ss.DB(DataBaseName).C(bucketName)
+	deleteErr := cc.DropCollection()
+	if deleteErr != nil && deleteErr != mgo.ErrNotFound {
+		log.Log("Delete bucket collection from database failed,err:%v.\n", deleteErr)
+		return InternalError
+	}
+
 	return NoError
 }

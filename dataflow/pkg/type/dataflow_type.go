@@ -9,9 +9,9 @@ import (
 
 var (
 	STOR_TYPE_OPENSDS = "opensds-obj"
-	STOR_TYPE_AWS_OBJ = "aws-obj"
-	STOR_TYPE_AZURE_OBJ = "azure-obj"
-	STOR_TYPE_HWCLOUD_OBJ = "hw-obj"
+	STOR_TYPE_AWS_S3 = "aws-obj"
+	STOR_TYPE_AZURE_BLOB = "azure-obj"
+	STOR_TYPE_HW_OBS = "hw-obj"
 )
 
 var (
@@ -54,11 +54,16 @@ type Policy struct {
 	Tenant string 			`json:"tenant" bson:"tenant"`
 }
 
+const (
+	ScheduleTypeCron  = "cron"
+)
+
 type Schedule struct {
 	//Id bson.ObjectId		`json:"-" bson:"_id,omitempty"`
 	Type string 			`json:"type" bson:"type"`
-	Day []string			`json:"day" bson:"day"`
-	TimePoint string		`json:"time_point" bson:"time_point"`
+	Day []string			`json:"day,omitempty" bson:"day,omitempty"`
+	TimePoint string		`json:"time_point,omitempty" bson:"time_point,omitempty"`
+	TriggerProperties string `json:"trigger_properties" bson:"trigger_properties"`
 }
 
 type KeyValue struct {
@@ -96,14 +101,21 @@ type Plan struct {
 	Tenant string 			`json:"tenant" bson:"tenant"`
 }
 
+const (
+	TriggerTypeManual = "manual"
+	TriggerTypeAuto = "auto"
+)
+
 type Job struct{
 	Id bson.ObjectId 		`json:"-" bson:"_id"`  //make index on id, it cnanot be duplicate
+	TriggerType string 		`json:"trigger_type" bson:"trigger_type"`
 	Type string 			`json:"type" bson:"type"` //migration
 	PlanName string			`json:"plan_name" bson:"plan_name"`
 	PlanId string			`json:"plan_id" bson:"plan_id"`
 	TotalCount int 			`json:"total_count" bson:"total_count"`
 	PassedCount int			`json:"passed_count" bson:"passed_count"`
-	TotalCapacity int64		`json:"total_capacity" bson:"passed_capacity"`
+	TotalCapacity int64		`json:"total_capacity" bson:"total_capacity"`
+	PassedCapacity int64    `json:"passed_capacity" bson:"passed_capacity"`
 	//when the plan related connector type is OPENSDS, then location should be bucket name
 	SourceLocation string	`json:"source_location" bson:"source_location"`
 	DestLocation string		`json:"dest_location" bson:"dest_location"`

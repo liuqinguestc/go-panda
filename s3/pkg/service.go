@@ -14,13 +14,15 @@ type s3Service struct{}
 
 func (b *s3Service) ListBuckets(ctx context.Context, in *pb.BaseRequest, out *pb.ListBucketsResponse) error {
 	log.Log("ListBuckets is called in s3 service.")
-	buckets, err := db.DbAdapter.ListBuckets(in)
+	buckets := []pb.Bucket{}
+	err := db.DbAdapter.ListBuckets(in, &buckets)
 	if err.Code != ERR_OK {
 		return err.Error()
 	}
-	for _, value := range buckets {
-		out.Buckets = append(out.Buckets, &value)
+	for j := 0; j < len(buckets); j++ {
+		out.Buckets = append(out.Buckets, &buckets[j])
 	}
+
 	return nil
 }
 
@@ -59,28 +61,54 @@ func (b *s3Service) DeleteBucket(ctx context.Context, in *pb.Bucket, out *pb.Bas
 	return nil
 }
 
-func (b *s3Service) ListObjects(ctx context.Context, in *pb.Object, out *pb.ListObjectResponse) error {
+func (b *s3Service) ListObjects(ctx context.Context, in *pb.ListObjectsRequest, out *pb.ListObjectResponse) error {
+	log.Log("ListObject is called in s3 service.")
+	objects := []pb.Object{}
+	err := db.DbAdapter.ListObjects(in, &objects)
+
+	if err.Code != ERR_OK {
+		return err.Error()
+	}
+	for j := 0; j < len(objects); j++ {
+		out.ListObjects = append(out.ListObjects, &objects[j])
+	}
+	return nil
+}
+
+func (b *s3Service) CreateObject(ctx context.Context, in *pb.Object, out *pb.BaseResponse) error {
 	log.Log("PutObject is called in s3 service.")
+	err := db.DbAdapter.CreateObject(in)
+
+	if err.Code != ERR_OK {
+		return err.Error()
+	}
+	out.Msg = "Create object successfully."
 
 	return nil
 }
 
-func (b *s3Service) PutObject(ctx context.Context, in *pb.Object, out *pb.BaseResponse) error {
+func (b *s3Service) UpdateObject(ctx context.Context, in *pb.Object, out *pb.BaseResponse) error {
 	log.Log("PutObject is called in s3 service.")
 	out.Msg = "Create bucket successfully."
 	return nil
 }
 
-func (b *s3Service) GetObject(ctx context.Context, in *pb.Object, out *pb.Object) error {
+func (b *s3Service) GetObject(ctx context.Context, in *pb.GetObjectInput, out *pb.Object) error {
 	log.Log("GetObject is called in s3 service.")
-	out.ObjectKey = in.ObjectKey
-	out.BucketName = in.BucketName
+	err := db.DbAdapter.GetObject(in, out)
+	if err.Code != ERR_OK {
+		return err.Error()
+	}
 	return nil
 }
 
-func (b *s3Service) DeleteObject(ctx context.Context, in *pb.Object, out *pb.BaseResponse) error {
-	log.Log("PutObject is called in s3 service.")
-	out.Msg = "Create bucket successfully."
+func (b *s3Service) DeleteObject(ctx context.Context, in *pb.DeleteObjectInput, out *pb.BaseResponse) error {
+	log.Log("DeleteObject is called in s3 service.")
+	err := db.DbAdapter.DeleteObject(in)
+	if err.Code != ERR_OK {
+		return err.Error()
+	}
+	out.Msg = "Delete object successfully."
 	return nil
 }
 
